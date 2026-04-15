@@ -1,8 +1,18 @@
 <?php
 /**
- * App Portal - Ledger History
+ * App Portal - Dynamic Ledger History
  */
 if (!isset($active_portal) || $active_portal !== 'app') die("Pulse lost.");
+
+$token = $_SESSION['api_token'] ?? '';
+$api_res = call_moonlight_api('/v1/user/ledger', 'GET', [], $token);
+
+if ($api_res['status_code'] === 401) {
+    redirect(get_url('app', '/?module=auth&page=logout&sec_bind=' . esc($system_bind)));
+}
+
+$ledgers = $api_res['body']['data'] ?? [];
+
 require_once __DIR__ . '/../../includes/app_header.php';
 ?>
 
@@ -16,12 +26,46 @@ require_once __DIR__ . '/../../includes/app_header.php';
     </div>
 </header>
 
-<div class="glass-panel p-16 rounded-3xl text-center border-dashed border-2 border-gray-700/50">
-    <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-800/80 text-gray-500 text-4xl mb-6 shadow-inner">
-        <i class="ph-fill ph-scroll"></i>
+<div class="glass-panel rounded-3xl overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm text-gray-400">
+            <thead class="bg-gray-900/80 text-xs uppercase tracking-widest text-gray-500 border-b border-gray-800">
+                <tr>
+                    <th class="px-8 py-5 font-bold">Ledger ID</th>
+                    <th class="px-8 py-5 font-bold">Timestamp</th>
+                    <th class="px-8 py-5 font-bold">Value Transferred</th>
+                    <th class="px-8 py-5 font-bold">Network Status</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-800/50">
+                <?php if (empty($ledgers)): ?>
+                    <tr><td colspan="4" class="px-8 py-12 text-center text-gray-500 italic">Your ledger is currently empty.</td></tr>
+                <?php else: ?>
+                    <?php foreach ($ledgers as $ledger): ?>
+                        <tr class="hover:bg-gray-800/30 transition-colors">
+                            <td class="px-8 py-5 font-mono text-white">#<?= esc($ledger['ledger_id']) ?></td>
+                            <td class="px-8 py-5"><?= date('F j, Y, g:i A', strtotime($ledger['created_at'])) ?></td>
+                            <td class="px-8 py-5 font-bold text-white"><?= number_format($ledger['total_mmk'], 0) ?> <?= esc($ledger['display_currency']) ?></td>
+                            <td class="px-8 py-5">
+                                <?php 
+                                    $status_colors = [
+                                        'pending' => 'bg-orange-500/10 text-orange-400 border-orange-500/20',
+                                        'verifying' => 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+                                        'complete' => 'bg-green-500/10 text-green-400 border-green-500/20',
+                                        'expired' => 'bg-red-500/10 text-red-400 border-red-500/20'
+                                    ];
+                                    $color = $status_colors[$ledger['status']] ?? 'bg-gray-500/10 text-gray-400';
+                                ?>
+                                <span class="px-3 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-widest border <?= $color ?>">
+                                    <?= esc($ledger['status']) ?>
+                                </span>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </tbody>
+        </table>
     </div>
-    <h2 class="text-xl font-bold text-white mb-2">No Transactions Found</h2>
-    <p class="text-gray-500 max-w-sm mx-auto">Your ledger is currently empty. Initiate a checkout sequence from the market to generate a ledger.</p>
 </div>
 
 <?php require_once __DIR__ . '/../../includes/app_footer.php'; ?>
