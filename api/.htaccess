@@ -1,0 +1,20 @@
+# PORTAL 5: API
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Allow Authorization headers to pass through to PHP for JWT verification
+    RewriteCond %{HTTP:Authorization} ^(.*)
+    RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
+
+    # Send All Requests To Front Controller...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+# Security: Block direct access to the included PHP files inside v1/
+<FilesMatch "^(?!index\.php).*\.php$">
+    Order deny,allow
+    Deny from all
+</FilesMatch>
