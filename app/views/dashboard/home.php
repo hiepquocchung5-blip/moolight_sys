@@ -15,7 +15,7 @@ $dashboard_data = $api_res['body']['data'] ?? ['vault_count' => 0, 'recent_ledge
 $error_msg = $_GET['error'] ?? null;
 $success_msg = $_GET['success'] ?? null;
 
-require_once __DIR__ . '/includes/app_header.php';
+require_once __DIR__ . '/../../includes/app_header.php';
 ?>
 
 <!-- Header -->
@@ -119,4 +119,4 @@ require_once __DIR__ . '/includes/app_header.php';
     </div>
 </div>
 
-<?php require_once __DIR__ . '/includes/app_footer.php'; ?>
+<?php require_once __DIR__ . '/../../includes/app_footer.php'; ?>

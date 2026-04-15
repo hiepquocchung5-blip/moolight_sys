@@ -4,7 +4,7 @@
  * Placeholder for future endpoint integration.
  */
 if (!isset($active_portal) || $active_portal !== 'app') die("Pulse lost.");
-require_once __DIR__ . '/includes/app_header.php';
+require_once __DIR__ . '/../../includes/app_header.php';
 ?>
 
 <header class="mb-8 flex justify-between items-end">
