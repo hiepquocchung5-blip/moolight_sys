@@ -56,8 +56,8 @@ switch ($module) {
     default:
         if (!$is_logged_in) redirect(get_url('app', '/?module=auth&page=login'));
         
-        // Allowed dashboard views
-        $allowed_views = ['home', 'vault', 'ledger', 'settings'];
+        // Added 'process_settings' to allowed routes
+        $allowed_views = ['home', 'vault', 'ledger', 'settings', 'process_settings'];
         $view_file = in_array($page, $allowed_views) ? $page : 'home';
         
         require_once __DIR__ . "/views/dashboard/{$view_file}.php";
