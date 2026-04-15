@@ -1,9 +1,12 @@
 <?php
 /**
- * App Portal - Entity Settings
+ * App Portal - Entity Settings (V3 Production)
  */
 if (!isset($active_portal) || $active_portal !== 'app') die("Pulse lost.");
 require_once __DIR__ . '/../../includes/app_header.php';
+
+$error_msg = $_GET['error'] ?? null;
+$success_msg = $_GET['success'] ?? null;
 ?>
 
 <header class="mb-8 flex justify-between items-end">
@@ -16,7 +19,18 @@ require_once __DIR__ . '/../../includes/app_header.php';
     </div>
 </header>
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<?php if ($error_msg): ?>
+    <div class="bg-red-500/10 border border-red-500/30 text-red-400 text-sm p-4 rounded-xl mb-8 flex items-center gap-3">
+        <i class="ph-fill ph-warning-circle text-xl"></i> <?= esc($error_msg) ?>
+    </div>
+<?php endif; ?>
+<?php if ($success_msg): ?>
+    <div class="bg-green-500/10 border border-green-500/30 text-green-400 text-sm p-4 rounded-xl mb-8 flex items-center gap-3">
+        <i class="ph-fill ph-check-circle text-xl"></i> <?= esc($success_msg) ?>
+    </div>
+<?php endif; ?>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
     <!-- Profile Info -->
     <div class="glass-panel p-8 rounded-3xl">
         <h3 class="text-lg font-bold text-white mb-6 border-b border-gray-800 pb-3"><i class="ph-fill ph-identification-card text-blue-500"></i> Primary Identifier</h3>
@@ -43,6 +57,35 @@ require_once __DIR__ . '/../../includes/app_header.php';
             <i class="ph-fill ph-telegram-logo text-xl"></i> Bind MoonBot Signal
         </a>
     </div>
+</div>
+
+<!-- Security Center (Change Password) -->
+<div class="glass-panel p-8 rounded-3xl border-l-4 border-l-purple-500">
+    <h3 class="text-lg font-bold text-white mb-6 border-b border-gray-800 pb-3"><i class="ph-fill ph-shield-check text-purple-500"></i> Security Center</h3>
+    
+    <form action="<?= get_url('app', '/?module=dashboard&page=process_settings') ?>" method="POST" class="max-w-xl space-y-4">
+        <input type="hidden" name="sec_bind" value="<?= esc($system_bind) ?>">
+        
+        <div>
+            <label class="text-[10px] uppercase tracking-widest font-bold text-gray-500 block mb-1 pl-1">Current Passcode</label>
+            <input type="password" name="current_password" required placeholder="••••••••" class="bg-gray-900/50 border border-gray-800 text-white px-4 py-3 rounded-xl w-full focus:border-purple-500 focus:outline-none transition-colors">
+        </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label class="text-[10px] uppercase tracking-widest font-bold text-gray-500 block mb-1 pl-1">New Passcode</label>
+                <input type="password" name="new_password" required minlength="8" placeholder="••••••••" class="bg-gray-900/50 border border-gray-800 text-white px-4 py-3 rounded-xl w-full focus:border-purple-500 focus:outline-none transition-colors">
+            </div>
+            <div>
+                <label class="text-[10px] uppercase tracking-widest font-bold text-gray-500 block mb-1 pl-1">Confirm New</label>
+                <input type="password" name="confirm_password" required minlength="8" placeholder="••••••••" class="bg-gray-900/50 border border-gray-800 text-white px-4 py-3 rounded-xl w-full focus:border-purple-500 focus:outline-none transition-colors">
+            </div>
+        </div>
+
+        <button type="submit" class="mt-4 bg-purple-600 hover:bg-purple-500 text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-[0_0_20px_rgba(147,51,234,0.3)] flex items-center gap-2">
+            Update Credentials <i class="ph-bold ph-check"></i>
+        </button>
+    </form>
 </div>
 
 <?php require_once __DIR__ . '/../../includes/app_footer.php'; ?>

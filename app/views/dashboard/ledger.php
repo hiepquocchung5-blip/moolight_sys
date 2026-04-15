@@ -1,74 +1,81 @@
 <?php
 /**
- * App Portal - Dynamic Digital Vault (Mobile Responsive)
+ * App Portal - Order History (With Clickable Rows)
  */
 if (!isset($active_portal) || $active_portal !== 'app') die("Pulse lost.");
 
 $token = $_SESSION['api_token'] ?? '';
-$api_res = call_moonlight_api('/v1/user/vault', 'GET', [], $token);
+$api_res = call_moonlight_api('/v1/user/ledger', 'GET', [], $token);
 
-if ($api_res['status_code'] === 401) {
-    redirect(get_url('app', '/?module=auth&page=logout&sec_bind=' . esc($system_bind)));
-}
-
-$artifacts = $api_res['body']['data'] ?? [];
+if ($api_res['status_code'] === 401) redirect(get_url('app', '/?module=auth&page=logout&sec_bind=' . esc($system_bind)));
+$ledgers = $api_res['body']['data'] ?? [];
 
 require_once __DIR__ . '/../../includes/app_header.php';
 ?>
 
 <header class="mb-6 md:mb-8 flex flex-col md:flex-row md:justify-between md:items-end gap-2">
     <div>
-        <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight">Digital Vault</h1>
-        <p class="text-sm md:text-base text-gray-400 mt-1">Your secured keys, files, and bespoke upgrades.</p>
+        <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight">Order History</h1>
+        <p class="text-sm md:text-base text-gray-400 mt-1">Complete record of your network transactions.</p>
     </div>
-    <div class="hidden sm:block text-right">
-        <i class="ph-duotone ph-vault text-4xl md:text-5xl text-blue-500/20"></i>
-    </div>
+    <div class="hidden sm:block text-right"><i class="ph-duotone ph-receipt text-4xl md:text-5xl text-purple-500/20"></i></div>
 </header>
 
-<?php if (empty($artifacts)): ?>
-    <div class="glass-panel p-10 md:p-16 rounded-3xl text-center border-dashed border-2 border-gray-700/50">
-        <div class="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 rounded-full bg-gray-800/80 text-gray-500 text-3xl md:text-4xl mb-4 md:mb-6 shadow-inner">
-            <i class="ph-fill ph-key"></i>
-        </div>
-        <h2 class="text-lg md:text-xl font-bold text-white mb-2">Vault Empty</h2>
-        <p class="text-sm md:text-base text-gray-500 max-w-sm mx-auto mb-6 md:mb-8">You have not acquired any artifacts yet.</p>
-        <a href="<?= get_url('main', '/') ?>#artifacts" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white text-sm md:text-base font-bold py-3 px-6 rounded-xl transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)]">
-            Browse Market <i class="ph-bold ph-arrow-right"></i>
-        </a>
+<div class="glass-panel rounded-3xl overflow-hidden shadow-lg">
+    <div class="hidden md:block overflow-x-auto">
+        <table class="w-full text-left text-sm text-gray-400">
+            <thead class="bg-gray-900/80 text-xs uppercase tracking-widest text-gray-500 border-b border-gray-800">
+                <tr>
+                    <th class="px-6 py-5 font-bold">Ledger ID</th>
+                    <th class="px-6 py-5 font-bold">Timestamp</th>
+                    <th class="px-6 py-5 font-bold">Total</th>
+                    <th class="px-6 py-5 font-bold">Status</th>
+                    <th class="px-6 py-5 font-bold text-right">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-800/50">
+                <?php if (empty($ledgers)): ?>
+                    <tr><td colspan="5" class="px-6 py-12 text-center text-gray-500 italic">Your ledger is empty.</td></tr>
+                <?php else: ?>
+                    <?php foreach ($ledgers as $ledger): ?>
+                        <tr class="hover:bg-gray-800/30 transition-colors">
+                            <td class="px-6 py-5 font-mono text-white">#<?= esc($ledger['ledger_id']) ?></td>
+                            <td class="px-6 py-5"><?= date('F j, Y, g:i A', strtotime($ledger['created_at'])) ?></td>
+                            <td class="px-6 py-5 font-bold text-white"><?= number_format($ledger['total_mmk'], 0) ?> <?= esc($ledger['display_currency']) ?></td>
+                            <td class="px-6 py-5">
+                                <?php 
+                                    $status_colors = ['pending' => 'bg-orange-500/10 text-orange-400 border-orange-500/20', 'verifying' => 'bg-blue-500/10 text-blue-400 border-blue-500/20', 'complete' => 'bg-green-500/10 text-green-400 border-green-500/20', 'expired' => 'bg-red-500/10 text-red-400 border-red-500/20'];
+                                    $color = $status_colors[$ledger['status']] ?? 'bg-gray-500/10 text-gray-400';
+                                ?>
+                                <span class="px-3 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-widest border <?= $color ?>"><?= esc($ledger['status']) ?></span>
+                            </td>
+                            <td class="px-6 py-5 text-right">
+                                <a href="<?= get_url('app', '/?module=dashboard&page=ledger_detail&id=' . $ledger['ledger_id'] . '&sec_bind=' . esc($system_bind)) ?>" class="text-blue-400 hover:text-white font-bold text-xs uppercase tracking-widest transition-colors flex items-center justify-end gap-1">View <i class="ph-bold ph-caret-right"></i></a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </tbody>
+        </table>
     </div>
-<?php else: ?>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-        <?php foreach ($artifacts as $art): ?>
+
+    <div class="md:hidden divide-y divide-gray-800/50">
+        <?php foreach ($ledgers as $ledger): ?>
             <?php 
-                $is_link = filter_var($art['payload'], FILTER_VALIDATE_URL);
-                $color = $art['delivery_type'] === 'singularity' ? 'purple' : 'green';
+                $status_colors = ['pending' => 'text-orange-400', 'verifying' => 'text-blue-400', 'complete' => 'text-green-400', 'expired' => 'text-red-400'];
+                $t_color = $status_colors[$ledger['status']] ?? 'text-gray-400';
             ?>
-            <div class="glass-panel p-5 md:p-6 rounded-3xl relative overflow-hidden group hover:border-<?= $color ?>-500/30 transition-colors">
-                <div class="flex justify-between items-start mb-3 md:mb-4">
-                    <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-<?= $color ?>-500/10 text-<?= $color ?>-400 flex items-center justify-center text-xl md:text-2xl group-hover:scale-110 transition-transform">
-                        <i class="ph-fill <?= $is_link ? 'ph-link' : 'ph-key' ?>"></i>
-                    </div>
-                    <span class="text-[9px] md:text-[10px] uppercase tracking-widest font-bold bg-gray-800 text-gray-400 px-2 py-1 rounded border border-gray-700">
-                        <?= esc($art['category']) ?>
-                    </span>
+            <a href="<?= get_url('app', '/?module=dashboard&page=ledger_detail&id=' . $ledger['ledger_id'] . '&sec_bind=' . esc($system_bind)) ?>" class="p-4 flex flex-col gap-3 hover:bg-gray-800/30 transition-colors block">
+                <div class="flex justify-between items-center">
+                    <span class="font-mono text-white text-sm font-bold">#<?= esc($ledger['ledger_id']) ?></span>
+                    <span class="text-[10px] font-bold uppercase tracking-widest <?= $t_color ?>"><?= esc($ledger['status']) ?></span>
                 </div>
-                <h3 class="text-base md:text-lg font-bold text-white mb-1 truncate"><?= esc($art['title']) ?></h3>
-                <p class="text-[10px] md:text-xs text-gray-500 mb-4 border-b border-gray-800 pb-3 md:pb-4">Acquired: <?= date('M j, Y', strtotime($art['claimed_at'])) ?></p>
-                
-                <div class="bg-gray-900/80 border border-gray-800 rounded-xl p-3 md:p-4 relative group-hover:border-<?= $color ?>-500/50 transition-colors">
-                    <span class="text-[8px] md:text-[9px] uppercase tracking-widest font-bold text-gray-500 block mb-1">Secure Payload</span>
-                    <?php if ($is_link): ?>
-                        <a href="<?= esc($art['payload']) ?>" target="_blank" class="text-blue-400 font-bold hover:underline flex items-center gap-1 text-xs md:text-sm break-all">
-                            Access Portal <i class="ph-bold ph-arrow-square-out"></i>
-                        </a>
-                    <?php else: ?>
-                        <div class="font-mono text-gray-300 md:text-white text-xs md:text-sm break-all select-all tracking-wider"><?= esc($art['payload']) ?></div>
-                    <?php endif; ?>
+                <div class="flex justify-between items-end">
+                    <span class="text-xs text-gray-500"><?= date('M j, Y g:i A', strtotime($ledger['created_at'])) ?></span>
+                    <span class="text-sm font-bold text-white flex items-center gap-2"><?= number_format($ledger['total_mmk'], 0) ?> <?= esc($ledger['display_currency']) ?> <i class="ph-bold ph-caret-right text-gray-600"></i></span>
                 </div>
-            </div>
+            </a>
         <?php endforeach; ?>
     </div>
-<?php endif; ?>
-
+</div>
 <?php require_once __DIR__ . '/../../includes/app_footer.php'; ?>

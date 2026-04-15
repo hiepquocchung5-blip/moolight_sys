@@ -1,6 +1,6 @@
 <?php
 /**
- * App Portal - Command Center (V3 Mobile Rich)
+ * App Portal - Command Center (V3.5 Localized UI)
  */
 if (!isset($active_portal) || $active_portal !== 'app') die("Pulse lost.");
 require_once __DIR__ . '/../../../functions/currency_engine.php';
@@ -24,7 +24,7 @@ require_once __DIR__ . '/../../includes/app_header.php';
 ?>
 
 <header class="mb-6 md:mb-8">
-    <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight">Command Center</h1>
+    <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight">Dashboard</h1>
     <p class="text-sm md:text-base text-gray-400 mt-1">Real-time overview of your assets.</p>
 </header>
 
@@ -41,14 +41,14 @@ require_once __DIR__ . '/../../includes/app_header.php';
 
 <!-- Core Stats Grid -->
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 mb-8 md:mb-10">
-    <!-- Vault Widget -->
+    <!-- User-Friendly "My Products" (Vault) Widget -->
     <div class="glass-panel p-5 md:p-6 rounded-3xl flex items-center justify-between group cursor-pointer shadow-lg" onclick="window.location.href='<?= get_url('app', '/?module=dashboard&page=vault&sec_bind=' . esc($system_bind)) ?>'">
         <div>
-            <h3 class="text-[9px] md:text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1 md:mb-2">Items Secured</h3>
-            <p class="text-3xl md:text-4xl text-white font-black"><?= esc($dashboard_data['vault_count']) ?></p>
+            <h3 class="text-[9px] md:text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1 md:mb-2">Total Owned</h3>
+            <p class="text-3xl md:text-4xl text-white font-black"><?= esc($dashboard_data['vault_count']) ?> <span class="text-base text-gray-500 font-bold tracking-normal">Products</span></p>
         </div>
         <div class="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center text-2xl md:text-3xl group-hover:scale-110 transition-transform">
-            <i class="ph-fill ph-vault"></i>
+            <i class="ph-fill ph-package"></i>
         </div>
     </div>
 
@@ -57,7 +57,7 @@ require_once __DIR__ . '/../../includes/app_header.php';
         <div class="glass-panel p-5 md:p-6 rounded-3xl flex items-center justify-between border-[#229ED9]/30 bg-[#229ED9]/5 relative overflow-hidden shadow-lg">
             <i class="ph-fill ph-telegram-logo absolute -right-4 -bottom-4 text-7xl text-[#229ED9]/10"></i>
             <div class="relative z-10">
-                <h3 class="text-[9px] md:text-[10px] text-[#229ED9] font-bold uppercase tracking-widest mb-1 md:mb-2">MoonBot Status</h3>
+                <h3 class="text-[9px] md:text-[10px] text-[#229ED9] font-bold uppercase tracking-widest mb-1 md:mb-2">Notification Bot</h3>
                 <p class="text-lg md:text-xl text-white font-bold flex items-center gap-2">
                     <i class="ph-fill ph-check-circle text-green-400"></i> Signal Active
                 </p>
@@ -67,18 +67,18 @@ require_once __DIR__ . '/../../includes/app_header.php';
         <div class="glass-panel p-5 md:p-6 rounded-3xl flex items-center justify-between border-orange-500/30 bg-orange-500/5 group cursor-pointer shadow-lg" onclick="window.location.href='<?= get_url('app', '/?module=dashboard&page=settings&sec_bind=' . esc($system_bind)) ?>'">
             <div>
                 <h3 class="text-[9px] md:text-[10px] text-orange-400 font-bold uppercase tracking-widest mb-1 md:mb-2 flex items-center gap-1"><i class="ph-fill ph-warning"></i> Action Required</h3>
-                <p class="text-base md:text-lg text-white font-bold">Bind Telegram Signal</p>
+                <p class="text-base md:text-lg text-white font-bold">Connect Telegram Bot</p>
             </div>
             <i class="ph-bold ph-arrow-right text-orange-400 text-xl group-hover:translate-x-1 transition-transform"></i>
         </div>
     <?php endif; ?>
 </div>
 
-<!-- Dynamic Trending Sparks (Horizontal Scroll on Mobile) -->
+<!-- Dynamic Trending Prompts -->
 <div class="mb-8 md:mb-10">
     <div class="flex justify-between items-end mb-4 md:mb-6">
-        <h2 class="text-lg md:text-xl font-bold text-white flex items-center gap-2"><i class="ph-fill ph-fire text-orange-500"></i> Trending Sparks</h2>
-        <a href="<?= get_url('main', '/') ?>#sparks" class="text-[10px] md:text-xs text-purple-400 hover:text-white font-bold uppercase tracking-widest transition-colors">Explore All</a>
+        <h2 class="text-lg md:text-xl font-bold text-white flex items-center gap-2"><i class="ph-fill ph-fire text-orange-500"></i> Trending Prompts</h2>
+        <a href="<?= get_url('app', '/?module=dashboard&page=market') ?>" class="text-[10px] md:text-xs text-purple-400 hover:text-white font-bold uppercase tracking-widest transition-colors">Shop All</a>
     </div>
     
     <div class="flex overflow-x-auto gap-4 md:gap-6 pb-4 no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
@@ -95,17 +95,17 @@ require_once __DIR__ . '/../../includes/app_header.php';
                     <span class="text-[9px] uppercase tracking-widest font-bold text-gray-500"><?= esc($spark['type']) ?></span>
                 </div>
                 <h3 class="text-sm font-bold text-white mb-2 truncate group-hover:text-<?= $s_color ?>-400 transition-colors"><?= esc($spark['title']) ?></h3>
-                <span class="text-xs font-bold bg-gray-800 text-gray-300 px-2.5 py-1 rounded-md"><?= $price_display ?></span>
+                <span class="text-xs font-bold bg-gray-800 text-gray-300 px-2.5 py-1 rounded-md shadow-lg"><?= $price_display ?></span>
             </a>
         <?php endforeach; ?>
     </div>
 </div>
 
-<!-- Latest Network Artifacts -->
+<!-- Latest Products -->
 <div class="mb-8">
     <div class="flex justify-between items-end mb-4 md:mb-6">
-        <h2 class="text-lg md:text-xl font-bold text-white flex items-center gap-2"><i class="ph-fill ph-vault text-blue-500"></i> New In Vault</h2>
-        <a href="<?= get_url('main', '/') ?>#artifacts" class="text-[10px] md:text-xs text-blue-400 hover:text-white font-bold uppercase tracking-widest transition-colors">View Market</a>
+        <h2 class="text-lg md:text-xl font-bold text-white flex items-center gap-2"><i class="ph-fill ph-storefront text-blue-500"></i> New Products</h2>
+        <a href="<?= get_url('app', '/?module=dashboard&page=market') ?>" class="text-[10px] md:text-xs text-blue-400 hover:text-white font-bold uppercase tracking-widest transition-colors">Shop All</a>
     </div>
     
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
@@ -115,11 +115,11 @@ require_once __DIR__ . '/../../includes/app_header.php';
                 $a_icon = $art['category'] === 'gaming' ? 'ph-game-controller' : 'ph-robot';
             ?>
             <a href="<?= get_url('app', '/?module=shop&page=view&id=' . $art['art_id']) ?>" class="glass-panel p-4 md:p-5 rounded-3xl flex items-center gap-4 group hover:border-<?= $a_color ?>-500/50 transition-colors block">
-                <div class="w-12 h-12 md:w-14 md:h-14 shrink-0 rounded-2xl bg-gray-800 flex items-center justify-center text-xl md:text-2xl text-<?= $a_color ?>-500 group-hover:scale-110 transition-transform">
+                <div class="w-12 h-12 md:w-14 md:h-14 shrink-0 rounded-2xl bg-gray-900 border border-gray-800 flex items-center justify-center text-xl md:text-2xl text-<?= $a_color ?>-500 group-hover:scale-110 transition-transform shadow-inner">
                     <i class="ph-fill <?= $a_icon ?>"></i>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <h3 class="text-sm md:text-base font-bold text-white truncate"><?= esc($art['title']) ?></h3>
+                    <h3 class="text-sm md:text-base font-bold text-white truncate group-hover:text-<?= $a_color ?>-400 transition-colors"><?= esc($art['title']) ?></h3>
                     <p class="text-[10px] md:text-xs text-gray-500 uppercase tracking-widest font-bold mt-1"><?= esc($art['delivery_type']) ?> Class</p>
                 </div>
             </a>
