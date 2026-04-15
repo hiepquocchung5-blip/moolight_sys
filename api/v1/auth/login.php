@@ -1,22 +1,38 @@
 <?php
 /**
  * API Endpoint: /v1/auth/login (V3 Production)
- * Secure authentication handler with strict JWT token generation.
+ * Secure authentication handler with strict JWT generation and Buffer Wiping.
  */
+
+// 1. Force PHP to hide HTML errors so they don't corrupt our JSON response
+ini_set('display_errors', 0);
+
+// 2. Helper function to aggressively wipe any accidental whitespace before sending JSON
+function send_clean_json($status_code, $response_array) {
+    if (ob_get_length()) ob_clean(); // Destroy any hidden whitespace or PHP warnings
+    http_response_code($status_code);
+    echo json_encode($response_array);
+    exit;
+}
+
 if (!isset($active_portal) || $active_portal !== 'api') {
-    http_response_code(403); echo json_encode(["status" => "error", "message" => "Direct access forbidden. Pulse lost."]); exit;
+    send_clean_json(403, ["status" => "error", "message" => "Direct access forbidden. Pulse lost."]);
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405); echo json_encode(["status" => "error", "message" => "Method not allowed. Use POST."]); exit;
+    send_clean_json(405, ["status" => "error", "message" => "Method not allowed. Use POST."]);
 }
 
-$identifier = trim($input['identifier'] ?? '');
-$password = $input['password'] ?? '';
+// Safely parse input to prevent PHP 8 'Trying to access array offset on null' warnings
+$input_data = (isset($input) && is_array($input)) ? $input : [];
+$identifier = trim($input_data['identifier'] ?? '');
+$password = $input_data['password'] ?? '';
 
-// V3 Strict Validation
+// ==========================================
+// V3 Strict Payload Validation
+// ==========================================
 if (empty($identifier) || empty($password)) {
-    http_response_code(400); echo json_encode(["status" => "error", "message" => "Identity and Passcode are strictly required for authentication."]); exit;
+    send_clean_json(400, ["status" => "error", "message" => "Identity and Passcode are strictly required for authentication."]);
 }
 
 try {
@@ -32,7 +48,8 @@ try {
         $jwt_secret = getenv('JWT_SECRET') ?: ($_ENV['JWT_SECRET'] ?? null);
         
         if (!$jwt_secret) {
-            http_response_code(500); echo json_encode(["status" => "error", "message" => "System Fault: Cryptographic secret missing."]); exit;
+            error_log("Critical Error: JWT_SECRET missing in environment config.");
+            send_clean_json(500, ["status" => "error", "message" => "System Fault: Cryptographic secret missing."]);
         }
 
         // Generate JWT Payload
@@ -44,8 +61,7 @@ try {
         ];
         $token = generate_jwt($payload, $jwt_secret);
         
-        http_response_code(200);
-        echo json_encode([
+        send_clean_json(200, [
             "status" => "success", 
             "message" => "Secure connection established.", 
             "data" => [
@@ -55,9 +71,11 @@ try {
             ]
         ]);
     } else {
-        http_response_code(401); echo json_encode(["status" => "error", "message" => "Authentication rejected: Invalid identity or passcode."]);
+        // We use 401 Unauthorized for incorrect passwords
+        send_clean_json(401, ["status" => "error", "message" => "Authentication rejected: Invalid identity or passcode."]);
     }
 } catch (\PDOException $e) {
-    http_response_code(500); echo json_encode(["status" => "error", "message" => "Internal Database Fault during authentication verification."]);
+    // Log the exact database error silently for the admin to read in the server error.log
+    error_log("Database Fault in API Login: " . $e->getMessage());
+    send_clean_json(500, ["status" => "error", "message" => "Internal Database Fault during authentication verification."]);
 }
-?>
