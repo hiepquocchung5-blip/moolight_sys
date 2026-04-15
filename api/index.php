@@ -21,20 +21,18 @@ if ($raw_input && json_last_error() !== JSON_ERROR_NONE) {
 
 switch ($request_uri) {
     // Auth Routes
-    case '/v1/auth/login':
-        require_once __DIR__ . '/v1/auth/login.php'; break;
-    case '/v1/auth/register':
-        require_once __DIR__ . '/v1/auth/register.php'; break;
+    case '/v1/auth/login': require_once __DIR__ . '/v1/auth/login.php'; break;
+    case '/v1/auth/register': require_once __DIR__ . '/v1/auth/register.php'; break;
 
     // Secure User Data Routes
-    case '/v1/user/dashboard':
-        require_once __DIR__ . '/v1/user/dashboard.php'; break;
-    case '/v1/user/settings':
-        require_once __DIR__ . '/v1/user/settings.php'; break;
-    case '/v1/user/vault':
-        require_once __DIR__ . '/v1/user/vault.php'; break;
-    case '/v1/user/ledger':
-        require_once __DIR__ . '/v1/user/ledger.php'; break;
+    case '/v1/user/dashboard': require_once __DIR__ . '/v1/user/dashboard.php'; break;
+    case '/v1/user/settings': require_once __DIR__ . '/v1/user/settings.php'; break;
+    case '/v1/user/vault': require_once __DIR__ . '/v1/user/vault.php'; break;
+    case '/v1/user/ledger': require_once __DIR__ . '/v1/user/ledger.php'; break;
+
+    // V3 Shop Data Routes
+    case '/v1/shop/view_artifact': require_once __DIR__ . '/v1/shop/view_artifact.php'; break;
+    case '/v1/shop/view_spark': require_once __DIR__ . '/v1/shop/view_spark.php'; break;
 
     case '/':
         http_response_code(200); echo json_encode(["status" => "online"]); break;

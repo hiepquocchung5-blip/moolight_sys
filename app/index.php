@@ -32,7 +32,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 switch ($module) {
     case 'auth':
         if ($is_logged_in && $page !== 'logout') redirect(get_url('app', '/?module=dashboard&page=home&sec_bind=' . $system_bind));
-        
         $allowed_pages = ['login', 'register', 'process_login', 'process_register', 'logout', 'oauth_redirect', 'oauth_callback'];
         if (in_array($page, $allowed_pages) && file_exists(__DIR__ . "/auth/{$page}.php")) {
             require_once __DIR__ . "/auth/{$page}.php";
@@ -43,23 +42,20 @@ switch ($module) {
 
     case 'shop':
         if (!$is_logged_in) redirect(get_url('app', '/?module=auth&page=login'));
-        
-        $allowed_shop = ['checkout', 'process_checkout'];
+        // V3 Added Shop Routing
+        $allowed_shop = ['view', 'view_spark', 'checkout', 'checkout_spark', 'process_checkout'];
         if (in_array($page, $allowed_shop) && file_exists(__DIR__ . "/shop/{$page}.php")) {
             require_once __DIR__ . "/shop/{$page}.php";
         } else {
-            redirect(get_url('app', '/?module=dashboard&page=home'));
+            redirect(get_url('app', '/?module=dashboard&page=home&error=' . urlencode("Market sector unavailable.")));
         }
         break;
 
     case 'dashboard':
     default:
         if (!$is_logged_in) redirect(get_url('app', '/?module=auth&page=login'));
-        
-        // Added 'process_settings' to allowed routes
         $allowed_views = ['home', 'vault', 'ledger', 'settings', 'process_settings'];
         $view_file = in_array($page, $allowed_views) ? $page : 'home';
-        
         require_once __DIR__ . "/views/dashboard/{$view_file}.php";
         break;
 }
