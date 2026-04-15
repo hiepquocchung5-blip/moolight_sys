@@ -11,9 +11,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405); echo json_encode(["status" => "error", "message" => "Method not allowed. Use POST."]); exit;
 }
 
-$moon_tag = trim($input['moon_tag'] ?? '');
-$email = trim($input['email'] ?? '');
-$password = $input['password'] ?? '';
+// Safely parse input to prevent PHP 8 'Trying to access array offset on null' warnings
+$input_data = (isset($input) && is_array($input)) ? $input : [];
+$moon_tag = trim($input_data['moon_tag'] ?? '');
+$email = trim($input_data['email'] ?? '');
+$password = $input_data['password'] ?? '';
 
 // ==========================================
 // V3 Strict Payload Validation
