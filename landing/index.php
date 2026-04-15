@@ -47,8 +47,8 @@ function get_art_style($category, $delivery_type) {
 // ==========================================
 // FETCH PRODUCTION DATABASE RECORDS
 // ==========================================
-// 1. Fetch Top 3 Active Premium Artifacts
-$stmt = $pdo->query("SELECT * FROM md_artifacts WHERE is_active = 1 ORDER BY created_at DESC LIMIT 3");
+// 1. Fetch Top 3 Active Premium Artifacts (FIXED: Sorting by art_id instead of created_at)
+$stmt = $pdo->query("SELECT * FROM md_artifacts WHERE is_active = 1 ORDER BY art_id DESC LIMIT 3");
 $artifacts = $stmt->fetchAll();
 
 // 2. Fetch Top 4 Neural Sparks
