@@ -33,11 +33,22 @@ switch ($module) {
     case 'auth':
         if ($is_logged_in && $page !== 'logout') redirect(get_url('app', '/?module=dashboard&page=home&sec_bind=' . $system_bind));
         
-        $allowed_pages = ['login', 'register', 'process_login', 'process_register', 'logout'];
-        if (in_array($page, $allowed_pages)) {
+        $allowed_pages = ['login', 'register', 'process_login', 'process_register', 'logout', 'oauth_redirect', 'oauth_callback'];
+        if (in_array($page, $allowed_pages) && file_exists(__DIR__ . "/auth/{$page}.php")) {
             require_once __DIR__ . "/auth/{$page}.php";
         } else {
             redirect(get_url('app', '/?module=auth&page=login'));
+        }
+        break;
+
+    case 'shop':
+        if (!$is_logged_in) redirect(get_url('app', '/?module=auth&page=login'));
+        
+        $allowed_shop = ['checkout', 'process_checkout'];
+        if (in_array($page, $allowed_shop) && file_exists(__DIR__ . "/shop/{$page}.php")) {
+            require_once __DIR__ . "/shop/{$page}.php";
+        } else {
+            redirect(get_url('app', '/?module=dashboard&page=home'));
         }
         break;
 
@@ -52,3 +63,4 @@ switch ($module) {
         require_once __DIR__ . "/views/dashboard/{$view_file}.php";
         break;
 }
+?>

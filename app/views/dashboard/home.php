@@ -1,24 +1,26 @@
 <?php
+/**
+ * App Portal - Command Center (Home)
+ * Fixes: Uses absolute relative paths to reach the /app/includes/ directory reliably.
+ */
 if (!isset($active_portal) || $active_portal !== 'app') die("Pulse lost.");
 
-// 1. Securely fetch User Data from the API using their JWT Token
+// Securely fetch User Data from the API using their JWT Token
 $token = $_SESSION['api_token'] ?? '';
 $api_res = call_moonlight_api('/v1/user/dashboard', 'GET', [], $token);
 
-// Handle Expired Tokens / Kicks
 if ($api_res['status_code'] === 401) {
     redirect(get_url('app', '/?module=auth&page=logout&sec_bind=' . esc($system_bind)));
 }
 
-// Fallback empty data if API fails temporarily
 $dashboard_data = $api_res['body']['data'] ?? ['vault_count' => 0, 'recent_ledgers' => [], 'is_tg_bound' => false];
 $error_msg = $_GET['error'] ?? null;
 $success_msg = $_GET['success'] ?? null;
 
+// FIX: Corrected path jumping up two directories to reach /includes/
 require_once __DIR__ . '/../../includes/app_header.php';
 ?>
 
-<!-- Header -->
 <header class="mb-8">
     <h1 class="text-3xl font-extrabold text-white tracking-tight">Command Center</h1>
     <p class="text-gray-400 mt-1">Real-time overview of your digital assets and ledger status.</p>
@@ -37,9 +39,8 @@ require_once __DIR__ . '/../../includes/app_header.php';
 
 <!-- Stats Grid -->
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-    
     <!-- Vault Widget -->
-    <div class="glass-panel p-6 rounded-3xl flex items-center justify-between group">
+    <div class="glass-panel p-6 rounded-3xl flex items-center justify-between group cursor-pointer" onclick="window.location.href='<?= get_url('app', '/?module=dashboard&page=vault&sec_bind=' . esc($system_bind)) ?>'">
         <div>
             <h3 class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Items Secured</h3>
             <p class="text-4xl text-white font-black"><?= esc($dashboard_data['vault_count']) ?></p>

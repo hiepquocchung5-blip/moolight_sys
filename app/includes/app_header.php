@@ -1,4 +1,7 @@
 <?php
+/**
+ * App Portal - Global Header & Navigation
+ */
 if (!isset($active_portal) || $active_portal !== 'app') die("Pulse lost.");
 $moon_tag = $_SESSION['moon_tag'] ?? 'Explorer';
 $rank = $_SESSION['rank'] ?? 'guest';
@@ -55,7 +58,7 @@ function is_active($page_name, $current) {
     </nav>
 
     <!-- Main Layout Grid -->
-    <div class="container mx-auto px-6 py-8 flex-1 flex flex-col lg:flex-row gap-8">
+    <div class="container mx-auto px-6 py-8 flex-1 flex flex-col lg:flex-row gap-8 relative z-10">
         
         <!-- Sidebar Navigation -->
         <aside class="w-full lg:w-64 shrink-0">
