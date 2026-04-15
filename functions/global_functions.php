@@ -6,7 +6,7 @@
 
 /**
  * Custom .env Parser without Composer.
- * Reads the .env file and loads variables into $_ENV and getenv().
+ * Production Safe: Omits putenv() as it is frequently disabled on live servers.
  */
 function load_env($filePath) {
     if (!file_exists($filePath)) {
@@ -24,8 +24,7 @@ function load_env($filePath) {
             $name = trim($name);
             $value = trim($value);
             
-            // Set variables into PHP environment
-            putenv(sprintf('%s=%s', $name, $value));
+            // Set variables into PHP environment securely without putenv()
             $_ENV[$name] = $value;
             $_SERVER[$name] = $value;
         }
@@ -34,7 +33,6 @@ function load_env($filePath) {
 
 /**
  * Output Sanitization Wrapper (Security)
- * Prevents XSS attacks when echoing user data to HTML.
  */
 function esc($string) {
     if ($string === null) return '';
@@ -43,30 +41,29 @@ function esc($string) {
 
 /**
  * V1.1 - Professional URL Generator
- * Dynamically builds absolute URLs based on the target portal.
+ * Uses $_ENV instead of getenv() to support servers with disabled putenv
  */
 function get_url($portal = 'main', $path = '') {
     $env_key = strtoupper($portal) . '_URL';
-    $base = getenv($env_key);
+    $base = $_ENV[$env_key] ?? null;
     
     // Fallback defaults if .env is missing
-    // if (!$base) {
-    //     $bases = [
-    //         'MAIN' => 'http://moonlightdigitalmarket.com',
-    //         'APP' => 'http://app.moonlightdigitalmarket.com',
-    //         'API' => 'http://api.moonlightdigitalmarket.com',
-    //         'ADMIN' => 'http://admin.moonlightdigitalmarket.com',
-    //         'PROOFPATH' => 'http://proofpath.moonlightdigitalmarket.com' // V1.2 Added Dedicated Image Server
-    //     ];
-    //     $base = $bases[strtoupper($portal)] ?? $bases['MAIN'];
-    // }
+    if (!$base) {
+        $bases = [
+            'MAIN' => 'http://moonlightdigitalmarket.com',
+            'APP' => 'http://app.moonlightdigitalmarket.com',
+            'API' => 'http://api.moonlightdigitalmarket.com',
+            'ADMIN' => 'http://admin.moonlightdigitalmarket.com',
+            'PROOFPATH' => 'http://proofpath.moonlightdigitalmarket.com'
+        ];
+        $base = $bases[strtoupper($portal)] ?? $bases['MAIN'];
+    }
     
     return rtrim($base, '/') . '/' . ltrim($path, '/');
 }
 
 /**
  * V1.1 - Professional Redirect Engine
- * Handles HTTP headers securely and safely terminates the script.
  */
 function redirect($url, $status_code = 302) {
     header("Location: " . $url, true, $status_code);
