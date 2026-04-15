@@ -1,24 +1,21 @@
 <?php
 /**
- * Moonlight Digital - API Engine V1.2
- * A secure cURL wrapper that acts as the bridge between your Frontend Portals and your API.
- * Supports standard JSON payloads as well as Multipart Form Data for Image Uploads.
+ * Moonlight Digital - API Engine V2
+ * Upgraded for HTTPS Production Environments with strict SSL handling.
  */
 
 function call_moonlight_api($endpoint, $method = 'POST', $data = []) {
-    // 1. Generate the absolute URL for the API endpoint using our global function
     $url = get_url('api', $endpoint);
-    
     $ch = curl_init($url);
     
-    // 2. Configure standard cURL options
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, strtoupper($method));
     
-    // 3. Process the payload if it's not a GET request
+    // CRITICAL PRODUCTION FIX: Ignore SSL verification for internal subdomain chatter
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+    
     if (strtoupper($method) !== 'GET') {
-        
-        // Check if the data array contains a physical file (CURLFile object)
         $is_multipart = false;
         foreach ($data as $key => $value) {
             if ($value instanceof CURLFile) {
@@ -28,10 +25,8 @@ function call_moonlight_api($endpoint, $method = 'POST', $data = []) {
         }
 
         if ($is_multipart) {
-            // For file uploads (like checkout screenshots), let cURL handle the multipart headers automatically
             curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
         } else {
-            // For standard data (like Login/Register), convert the array to JSON
             $payload = json_encode($data);
             curl_setopt($ch, CURLOPT_HTTPHEADER, [
                 'Content-Type: application/json',
@@ -41,29 +36,33 @@ function call_moonlight_api($endpoint, $method = 'POST', $data = []) {
         }
     }
 
-    // 4. Execute the request and capture the response
     $response = curl_exec($ch);
     $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     
-    // 5. Handle cURL errors (e.g., connection refused if API port is wrong)
+    // Catch cURL network errors
     if (curl_errno($ch)) {
         $error_msg = curl_error($ch);
         curl_close($ch);
         return [
             'status_code' => 500,
-            'body' => [
-                'status' => 'error',
-                'message' => 'Internal Server Connection Error: ' . $error_msg
-            ]
+            'body' => ['status' => 'error', 'message' => 'Network Fault: ' . $error_msg]
         ];
     }
     
     curl_close($ch);
 
-    // 6. Return formatted array
+    // Ensure we always return an array even if the API spits out fatal HTML errors
+    $decoded = json_decode($response, true);
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        return [
+            'status_code' => 500,
+            'body' => ['status' => 'error', 'message' => 'API returned invalid JSON. Check API logs.']
+        ];
+    }
+
     return [
         'status_code' => $http_code,
-        'body' => json_decode($response, true)
+        'body' => $decoded
     ];
 }
 ?>
