@@ -1,6 +1,6 @@
 <?php
 /**
- * PORTAL 5: API Engine (V3.6 Production)
+ * PORTAL 5: API Engine (V3.7 Production)
  */
 $active_portal = 'api';
 header('Content-Type: application/json');
@@ -11,17 +11,16 @@ require_once __DIR__ . '/../config/database.php';
 
 $request_uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
-// Only parse JSON if it's not a multipart form data upload
 $is_multipart = strpos($_SERVER['CONTENT_TYPE'] ?? '', 'multipart/form-data') !== false;
 $input = [];
 if (!$is_multipart) {
     $raw_input = file_get_contents('php://input');
     $input = json_decode($raw_input, true);
     if ($raw_input && json_last_error() !== JSON_ERROR_NONE) {
-        http_response_code(400); echo json_encode(["status" => "error", "message" => "Malformed JSON."]); exit;
+        http_response_code(400); echo json_encode(["status" => "error"]); exit;
     }
 } else {
-    $input = $_POST; // Populate input from standard POST array for multipart
+    $input = $_POST; 
 }
 
 switch ($request_uri) {
@@ -36,12 +35,13 @@ switch ($request_uri) {
     
     case '/v1/user/whisper_read': require_once __DIR__ . '/v1/user/whisper_read.php'; break;
     case '/v1/user/whisper_send': require_once __DIR__ . '/v1/user/whisper_send.php'; break;
+    
+    // NEW Forge Endpoint
+    case '/v1/user/forge_submit': require_once __DIR__ . '/v1/user/forge_submit.php'; break;
 
     case '/v1/shop/view_artifact': require_once __DIR__ . '/v1/shop/view_artifact.php'; break;
     case '/v1/shop/view_spark': require_once __DIR__ . '/v1/shop/view_spark.php'; break;
     case '/v1/shop/market': require_once __DIR__ . '/v1/shop/market.php'; break;
-    
-    // NEW Order Logic
     case '/v1/shop/process_order': require_once __DIR__ . '/v1/shop/process_order.php'; break;
 
     case '/': http_response_code(200); echo json_encode(["status" => "online"]); break;
